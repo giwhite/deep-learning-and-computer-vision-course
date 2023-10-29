@@ -1,0 +1,6 @@
+/GANs/__*
+/GANs/data/*
+/GANs/img/*
+/GANs/model/*
+/GANs/nohup.out
+/ViTs/datasets/*
