@@ -9,13 +9,13 @@ from sklearn.metrics import accuracy_score
 from module import ViT
 
 
-#device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
-device = torch.device('cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+#evice = torch.device('cpu')
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Arguments for training ViT")
-    parser.add_argument("--batch", type=int, default=1024)
-    parser.add_argument("--epoch", type=int, default=500)
+    parser.add_argument("--batch", type=int, default=128)
+    parser.add_argument("--epoch", type=int, default=300)
     parser.add_argument("--lr", type=float, default=1e-5)
     parser.add_argument("--dropout", type=float, default=0.1)
     args = parser.parse_args()
@@ -37,7 +37,7 @@ def train_model(trainloader, testloader, lr, input_size, batch_size, dropout_rat
     loss_func = nn.CrossEntropyLoss()
 
     train_loss = []
-
+    train_acc = []
     for epoch in range(args.epoch):
         model.train()
         epoch_loss = 0
@@ -45,6 +45,7 @@ def train_model(trainloader, testloader, lr, input_size, batch_size, dropout_rat
         total = 0
         predictions = []
         true_labels = []
+
         for batch in tqdm(trainloader):
             inputs, labels = batch
             inputs = inputs.to(device)
@@ -65,6 +66,7 @@ def train_model(trainloader, testloader, lr, input_size, batch_size, dropout_rat
         avg_train_loss = epoch_loss / len(trainloader)
         train_loss.append(avg_train_loss)
         accuracy = accuracy_score(true_labels, predictions)
+        train_acc.append(accuracy)
         print('Accuracy of the model in epoch %d: %.2f %%' % (epoch+1, 100 * accuracy))
         print('Epoch %d, Loss: %.3f' % (epoch+1, loss.item()))
         
@@ -101,6 +103,14 @@ def train_model(trainloader, testloader, lr, input_size, batch_size, dropout_rat
     plt.legend()
     plt.savefig(f'train_loss_{patch_size}_{emb_dim}_{num_head}_{num_layers}.png')
     
+        # plot
+    plt.figure()
+    plt.plot(range(len(train_acc)), train_acc, label='Training acc')
+    plt.xlabel('epoch')
+    plt.ylabel('loss')
+    plt.title(f'Training acc on ViT ')
+    plt.legend()
+    plt.savefig(f'train_acc_{patch_size}_{emb_dim}_{num_head}_{num_layers}.png')
     return accuracy
 
 if __name__ == '__main__':
@@ -126,29 +136,29 @@ if __name__ == '__main__':
     num_head = [6, 12, 24]
     num_layers = [10, 12, 14]
     
-    default_patch_size = 8
+    default_patch_size = 16
     default_emb_dim = 384
     default_num_head = 6
     default_num_layers = 10
     
-    accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, default_emb_dim, default_num_head, default_num_layers)
+    #accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, default_emb_dim, default_num_head, default_num_layers)
     
     # Grid search
-    # accuracy_exp = []
+    #accuracy_exp = []
     # for patch in patch_size:
     #     accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, patch, default_emb_dim, default_num_head, default_num_layers)
-    #     accuracy_exp.append(accuracy)
+        #accuracy_exp.append(accuracy)
 
     # for emb in emb_dim:
     #     accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, emb, default_num_head, default_num_layers)
-    #     accuracy_exp.append(accuracy)
+    #     #accuracy_exp.append(accuracy)
 
     # for head in num_head:
     #     accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, default_emb_dim, head, default_num_layers)
-    #     accuracy_exp.append(accuracy)
+    #     #accuracy_exp.append(accuracy)
 
-    # for layers in num_layers:
-    #     accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, default_emb_dim, default_num_head, layers)
-    #     accuracy_exp.append(accuracy)
+    for layers in num_layers:
+        accuracy = train_model(trainloader, testloader, lr, input_size, batch_size, dropout_ratio, default_patch_size, default_emb_dim, default_num_head, layers)
+        #accuracy_exp.append(accuracy)
         
-    print('experiment results are:', accuracy)
+        print('experiment results are:', accuracy)

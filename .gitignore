@@ -4,3 +4,4 @@
 /GANs/model/*
 /GANs/nohup.out
 /ViTs/datasets/*
+/ViTs/__*
